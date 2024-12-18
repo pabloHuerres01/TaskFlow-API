@@ -1,37 +1,20 @@
 package main
 
 import (
-	"log"
+	"taskflow-api/internal/handlers"
 
-	"taskflow-api/internal/db" // Reemplaza con tu ruta correcta
-
-	"go.mongodb.org/mongo-driver/bson"
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
-	// URI con autenticación
-	uri := "mongodb://admin:adminpassword@localhost:27017/?authSource=admin"
+	r := gin.Default()
 
-	// Conectar a MongoDB
-	mongoClient := db.ConnectMongoDB(uri, "taskflow", "tasks")
-	defer mongoClient.Close()
+	usuarioHandler := handlers.NewUsuarioHandler()
 
-	// Insertar un documento
-	newTask := bson.M{
-		"title":       "Primera tarea",
-		"description": "Descripción de la primera tarea",
-		"completed":   false,
-		"createdAt":   "2024-12-17",
-	}
+	// Definir las rutas antes de iniciar el servidor
+	r.GET("/api/v1/usuarios", usuarioHandler.ObtenerUsuarios)
+	r.POST("/api/v1/usuarios", usuarioHandler.CrearUsuario)
 
-	mongoClient.InsertDocument(newTask)
-
-	// Buscar documentos
-	filter := bson.M{"completed": false}
-	results := mongoClient.FindDocuments(filter)
-
-	log.Println("Documentos encontrados:")
-	for _, doc := range results {
-		log.Println(doc)
-	}
+	// Ahora que las rutas están definidas, inicias el servidor
+	r.Run(":8080") // Levanta el servidor en el puerto 8080
 }
